@@ -5,13 +5,32 @@ import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from '
 
 import ZButton from '@/components/ZButton';
 import { colors, radius, spacing, typography } from '@/constants/theme';
+import {
+  CameraIssueType,
+  getCameraSupportIssue,
+  improveCameraQuality,
+  probeCamera,
+} from '@/lib/cameraSupport';
 import getErrorMessage from '@/lib/getErrorMessage';
 import prepareScanner from '@/lib/prepareScanner';
-import translator from '@/lib/translator';
+import translator, { TranslationKeyType } from '@/lib/translator';
 
 // QR for generated labels, EAN-13 for manufacturer barcodes, Code 128 for the
 // barcode printed under our own labels.
 const barcodeTypes: BarcodeType[] = ['qr', 'ean13', 'code128'];
+
+const issueMessages: Record<CameraIssueType, TranslationKeyType> = {
+  denied: 'camera_denied_hint',
+  in_use: 'camera_in_use',
+  insecure: 'camera_insecure',
+  not_found: 'camera_not_found',
+  unknown: 'camera_error',
+  unsupported: 'camera_unsupported',
+};
+
+// Problems the user can fix and retry (insecure/unsupported need another URL
+// or browser, so retrying here would not help).
+const retryableIssues: CameraIssueType[] = ['denied', 'in_use', 'not_found', 'unknown'];
 
 type PropsType = {
   // Turns the camera off (e.g. when the screen is not focused).
@@ -27,14 +46,41 @@ const ZCodeScanner = ({ active, onScanned, paused }: PropsType) => {
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [mountError, setMountError] = useState<string | null>(null);
   const [isScannerReady, setIsScannerReady] = useState(false);
+  const [issue, setIssue] = useState<CameraIssueType | null>(getCameraSupportIssue);
+  const [isRequesting, setIsRequesting] = useState(false);
   // Several frames can report the same code before `paused` propagates.
   const lastReported = useRef<{ code: string; time: number } | null>(null);
+  const containerRef = useRef<View>(null);
 
   useEffect(() => {
     prepareScanner()
       .then(() => setIsScannerReady(true))
       .catch((error) => setMountError(getErrorMessage(error)));
   }, []);
+
+  const askForCamera = async () => {
+    setIsRequesting(true);
+    try {
+      const problem = await probeCamera();
+      setIssue(problem);
+      if (!problem) {
+        await requestPermission();
+      }
+    } finally {
+      setIsRequesting(false);
+    }
+  };
+
+  // Explain known browser failures (no camera, camera busy, ...) instead of
+  // showing the raw browser message.
+  const handleMountError = async (event: { message: string }) => {
+    const problem = await probeCamera();
+    if (problem) {
+      setIssue(problem);
+    } else {
+      setMountError(event.message);
+    }
+  };
 
   const handleScanned = (result: BarcodeScanningResult) => {
     const code = result.data?.trim();
@@ -49,6 +95,36 @@ const ZCodeScanner = ({ active, onScanned, paused }: PropsType) => {
     lastReported.current = { code, time: now };
     onScanned(code);
   };
+
+  // On web `canAskAgain` is always true, even when the browser has blocked the
+  // camera, so a denied status is shown as an issue with instructions.
+  const visibleIssue =
+    issue ?? (Platform.OS === 'web' && permission?.status === 'denied' ? 'denied' : null);
+
+  if (visibleIssue) {
+    return (
+      <View style={styles.center}>
+        <View style={styles.permissionIcon}>
+          <MaterialIcons
+            color={colors.onPrimary}
+            name={visibleIssue === 'insecure' ? 'lock-open' : 'no-photography'}
+            size={36}
+          />
+        </View>
+        <Text style={styles.permissionTitle}>{translator('camera_error')}</Text>
+        <Text style={styles.permissionHint}>{translator(issueMessages[visibleIssue])}</Text>
+        {retryableIssues.includes(visibleIssue) && (
+          <ZButton
+            disabled={isRequesting}
+            icon="refresh"
+            onPress={askForCamera}
+            style={styles.permissionButton}
+            title={translator('try_again')}
+          />
+        )}
+      </View>
+    );
+  }
 
   if (!permission || !isScannerReady) {
     return (
@@ -70,8 +146,9 @@ const ZCodeScanner = ({ active, onScanned, paused }: PropsType) => {
         </Text>
         {permission.canAskAgain && (
           <ZButton
+            disabled={isRequesting}
             icon="photo-camera"
-            onPress={requestPermission}
+            onPress={askForCamera}
             style={styles.permissionButton}
             title={translator('allow_camera')}
           />
@@ -91,14 +168,16 @@ const ZCodeScanner = ({ active, onScanned, paused }: PropsType) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View ref={containerRef} style={styles.container}>
       {active && (
         <CameraView
+          autofocus="on"
           barcodeScannerSettings={{ barcodeTypes }}
           enableTorch={isTorchOn}
           facing={facing}
           onBarcodeScanned={paused ? undefined : handleScanned}
-          onMountError={(event) => setMountError(event.message)}
+          onCameraReady={() => improveCameraQuality(containerRef.current)}
+          onMountError={handleMountError}
           style={StyleSheet.absoluteFill}
         />
       )}
