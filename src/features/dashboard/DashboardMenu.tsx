@@ -1,0 +1,126 @@
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Href, useRouter } from 'expo-router';
+import { ComponentProps } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { colors, gradient, gradients, radius, shadows, spacing, typography, withAlpha } from '@/constants/theme';
+import { useAuth } from '@/context/AuthContext';
+import translator from '@/lib/translator';
+
+type MenuItemType = {
+  adminOnly?: boolean;
+  color: string;
+  href: Href;
+  icon: ComponentProps<typeof MaterialIcons>['name'];
+  isHighlighted?: boolean;
+  label: string;
+};
+
+const menuItems: MenuItemType[] = [
+  {
+    color: colors.primary,
+    href: '/scan',
+    icon: 'qr-code-scanner',
+    isHighlighted: true,
+    label: translator('scan_code'),
+  },
+  { adminOnly: true, color: colors.success, href: '/transaction', icon: 'point-of-sale', label: translator('transaction') },
+  { color: colors.primary, href: '/product', icon: 'inventory-2', label: translator('product') },
+  { adminOnly: true, color: colors.warning, href: '/product/form', icon: 'add-box', label: translator('add_product') },
+  { adminOnly: true, color: colors.info, href: '/category', icon: 'category', label: translator('category') },
+  { adminOnly: true, color: colors.error, href: '/user', icon: 'group', label: translator('user') },
+];
+
+// Shortcuts to every page; only Dashboard, Scan and Transaction are tabs.
+const DashboardMenu = () => {
+  const router = useRouter();
+  const { isAdmin } = useAuth();
+  const items = menuItems.filter((item) => isAdmin || !item.adminOnly);
+
+  return (
+    <View style={styles.section}>
+      <Text style={styles.title}>{translator('menu')}</Text>
+      <View style={styles.grid}>
+        {items.map((item) => (
+          <Pressable
+            accessibilityRole="button"
+            key={item.label}
+            onPress={() => router.navigate(item.href)}
+            style={({ hovered, pressed }) => [
+              styles.tile,
+              (hovered || pressed) && styles.tilePressed,
+            ]}
+          >
+            <View
+              style={[
+                styles.icon,
+                item.isHighlighted
+                  ? [gradient(gradients.primary), shadows.lg]
+                  : { backgroundColor: withAlpha(item.color, 0.12) },
+              ]}
+            >
+              <MaterialIcons
+                color={item.isHighlighted ? colors.onPrimary : item.color}
+                name={item.icon}
+                size={item.isHighlighted ? 30 : 26}
+              />
+            </View>
+            <Text numberOfLines={2} style={[styles.label, item.isHighlighted && styles.labelHighlighted]}>
+              {item.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  section: {
+    ...shadows.sm,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    gap: spacing.md,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+  },
+  title: {
+    ...typography.subtitle,
+    color: colors.text,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    rowGap: spacing.md,
+  },
+  tile: {
+    alignItems: 'center',
+    borderRadius: radius.lg,
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+    width: '33.33%',
+  },
+  tilePressed: {
+    backgroundColor: colors.surfaceMuted,
+  },
+  icon: {
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    height: 56,
+    justifyContent: 'center',
+    width: 56,
+  },
+  label: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  labelHighlighted: {
+    color: colors.primary,
+    fontWeight: '800',
+  },
+});
+
+export default DashboardMenu;

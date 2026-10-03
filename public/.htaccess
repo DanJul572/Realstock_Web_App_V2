@@ -1,0 +1,27 @@
+# Single-page app: serve index.html for every route that is not a real file,
+# so deep links and page refreshes (e.g. /product/5) work.
+# When deploying to a subfolder (e.g. https://domain.com/stock), change
+# RewriteBase to /stock/ and the last rule to /stock/index.html, and set
+# "experiments.baseUrl": "/stock" in app.json before building.
+Options -MultiViews
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+
+# Bundles and assets have content hashes in their names: cache them long.
+# index.html must always be revalidated so new deployments are picked up.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|png|jpe?g|gif|svg|webp|ttf|woff2?)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
