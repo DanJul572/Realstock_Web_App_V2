@@ -2,7 +2,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ComponentProps, useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import ZBadge from '@/components/ZBadge';
 import ZButton from '@/components/ZButton';
@@ -104,17 +104,19 @@ const ProductDetailScreen = () => {
           <InfoTile icon="texture" label={translator('surface')} value={product.surface} />
         </View>
         {isAdmin && (
-          <View style={styles.infoGrid}>
+          <View style={[styles.infoGrid, styles.priceGrid]}>
             <InfoTile
               color={colors.success}
               icon="sell"
               label={`${translator('price')} 1`}
+              style={styles.priceTile}
               value={formatCurrency(product.price_1)}
             />
             <InfoTile
               color={colors.success}
               icon="sell"
               label={`${translator('price')} 2`}
+              style={styles.priceTile}
               value={formatCurrency(product.price_2)}
             />
           </View>
@@ -199,19 +201,19 @@ type InfoTilePropsType = {
   color?: string;
   icon: ComponentProps<typeof MaterialIcons>['name'];
   label: string;
+  style?: StyleProp<ViewStyle>;
   value: string;
 };
 
-const InfoTile = ({ color = colors.primary, icon, label, value }: InfoTilePropsType) => (
-  <View style={styles.tile}>
+// Values wrap instead of being cut off, so long prices stay fully visible.
+const InfoTile = ({ color = colors.primary, icon, label, style, value }: InfoTilePropsType) => (
+  <View style={[styles.tile, style]}>
     <View style={[styles.tileIcon, { backgroundColor: withAlpha(color, 0.1) }]}>
       <MaterialIcons color={color} name={icon} size={18} />
     </View>
     <View style={styles.tileText}>
       <Text style={styles.tileLabel}>{label}</Text>
-      <Text numberOfLines={1} style={styles.tileValue}>
-        {value || '-'}
-      </Text>
+      <Text style={styles.tileValue}>{value || '-'}</Text>
     </View>
   </View>
 );
@@ -287,6 +289,13 @@ const styles = StyleSheet.create({
   infoGrid: {
     flexDirection: 'row',
     gap: spacing.md,
+  },
+  // Prices sit side by side on wide screens and stack full width on phones.
+  priceGrid: {
+    flexWrap: 'wrap',
+  },
+  priceTile: {
+    flexBasis: 220,
   },
   tile: {
     alignItems: 'center',
