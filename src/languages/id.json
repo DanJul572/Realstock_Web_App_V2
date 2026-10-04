@@ -110,6 +110,7 @@
   "print_label": "Cetak Label",
   "product": "Produk",
   "product_code": "Kode Barcode/QR (opsional)",
+  "product_found": "Produk ditemukan",
   "product_info": "Informasi Produk",
   "record_id": "ID Data",
   "refresh": "Muat Ulang",

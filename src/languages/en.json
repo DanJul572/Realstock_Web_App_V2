@@ -110,6 +110,7 @@
   "print_label": "Print Label",
   "product": "Product",
   "product_code": "Barcode/QR Code (optional)",
+  "product_found": "Product found",
   "product_info": "Product Information",
   "record_id": "Record ID",
   "refresh": "Refresh",

@@ -1,10 +1,13 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { isAxiosError } from 'axios';
 import { ComponentProps, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import ZButton from '@/components/ZButton';
 import ZFormScreen, { ZFormSection } from '@/components/ZFormScreen';
 import ZIconButton from '@/components/ZIconButton';
+import ZScannerModal from '@/components/ZScannerModal';
 import ZSelect from '@/components/ZSelect';
 import ZTextField, { fieldStyles } from '@/components/ZTextField';
 import { colors, radius, spacing, withAlpha } from '@/constants/theme';
@@ -14,7 +17,7 @@ import useCategoryOptions, { toOptions } from '@/features/category/useCategoryOp
 import getErrorMessage from '@/lib/getErrorMessage';
 import request from '@/lib/request';
 import translator from '@/lib/translator';
-import { OptionType } from '@/types';
+import { OptionType, ProductDetailType } from '@/types';
 
 type TransactionFormType = {
   count: string;
@@ -41,6 +44,7 @@ const CreateTransactionScreen = () => {
   const categoryOptions = useCategoryOptions();
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [productOptions, setProductOptions] = useState<OptionType[]>([]);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const transactionTypeOptions: TransactionTypeOptionType[] = [
     { color: colors.success, icon: 'south-west', label: translator('in'), value: '1' },
@@ -70,6 +74,39 @@ const CreateTransactionScreen = () => {
       .finally(hideLoader);
   }, [categoryFilter, hideLoader, showAlert, showLoader]);
 
+  // Fills the category and product from a scanned barcode / QR code. Picking
+  // them by hand with the selects keeps working the same way.
+  const onScanned = async (code: string) => {
+    hideAlert();
+    showLoader();
+    try {
+      const product = await request.get<ProductDetailType>('/products/by-code', { code });
+      const categoryId = product.category_id?.toString() ?? null;
+      // A new category reloads its product list (see the effect above); until
+      // then the scanned product is the only option, so the select can show it.
+      if (categoryId !== categoryFilter || !categoryId) {
+        setCategoryFilter(categoryId);
+        setProductOptions([
+          {
+            label: `${product.name} - ${product.type} - ${product.size}`,
+            value: product.id.toString(),
+          },
+        ]);
+      }
+      setValue('product_id', product.id.toString());
+      showAlert('success', `${translator('product_found')}: ${product.name}`);
+    } catch (error) {
+      showAlert(
+        'error',
+        isAxiosError(error) && error.response?.status === 404
+          ? `${translator('code_not_found_title')}: ${code}`
+          : getErrorMessage(error)
+      );
+    } finally {
+      hideLoader();
+    }
+  };
+
   const onSubmit = handleSubmit(async (data) => {
     hideAlert();
     showLoader();
@@ -89,112 +126,125 @@ const CreateTransactionScreen = () => {
   });
 
   return (
-    <ZFormScreen onClear={() => reset()} onSubmit={onSubmit}>
-      <ZFormSection icon="swap-vert" title={translator('transaction_type')}>
-        <Controller
-          control={control}
-          name="transaction_type_id"
-          render={({ field }) => (
-            <View accessibilityRole="radiogroup" style={styles.segments}>
-              {transactionTypeOptions.map((option) => {
-                const isSelected = field.value === option.value;
-                return (
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: isSelected }}
-                    key={option.value}
-                    onPress={() => field.onChange(option.value)}
-                    style={[
-                      styles.segment,
-                      isSelected && {
-                        backgroundColor: withAlpha(option.color, 0.08),
-                        borderColor: option.color,
-                      },
-                    ]}
-                  >
-                    <View
+    <>
+      <ZFormScreen onClear={() => reset()} onSubmit={onSubmit}>
+        <ZFormSection icon="swap-vert" title={translator('transaction_type')}>
+          <Controller
+            control={control}
+            name="transaction_type_id"
+            render={({ field }) => (
+              <View accessibilityRole="radiogroup" style={styles.segments}>
+                {transactionTypeOptions.map((option) => {
+                  const isSelected = field.value === option.value;
+                  return (
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: isSelected }}
+                      key={option.value}
+                      onPress={() => field.onChange(option.value)}
                       style={[
-                        styles.segmentIcon,
-                        { backgroundColor: withAlpha(option.color, isSelected ? 0.16 : 0.08) },
+                        styles.segment,
+                        isSelected && {
+                          backgroundColor: withAlpha(option.color, 0.08),
+                          borderColor: option.color,
+                        },
                       ]}
                     >
-                      <MaterialIcons color={option.color} name={option.icon} size={22} />
-                    </View>
-                    <Text style={[styles.segmentText, isSelected && { color: option.color }]}>
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
-        />
-      </ZFormSection>
+                      <View
+                        style={[
+                          styles.segmentIcon,
+                          { backgroundColor: withAlpha(option.color, isSelected ? 0.16 : 0.08) },
+                        ]}
+                      >
+                        <MaterialIcons color={option.color} name={option.icon} size={22} />
+                      </View>
+                      <Text style={[styles.segmentText, isSelected && { color: option.color }]}>
+                        {option.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+          />
+        </ZFormSection>
 
-      <ZFormSection icon="inventory-2" title={translator('product')}>
-        <ZSelect
-          clearable
-          icon="category"
-          label={translator('category')}
-          onChange={onCategoryChange}
-          options={categoryOptions}
-          searchable
-          value={categoryFilter}
-        />
-        <Controller
-          control={control}
-          name="product_id"
-          render={({ field }) => (
-            <ZSelect
-              clearable
-              icon="inventory-2"
-              label={translator('product')}
-              onChange={field.onChange}
-              options={productOptions}
-              searchable
-              value={field.value}
-            />
-          )}
-        />
-        <Controller
-          control={control}
-          name="count"
-          render={({ field }) => {
-            const step = (delta: number) =>
-              field.onChange(String(Math.max(0, (Number(field.value) || 0) + delta)));
-            return (
-              <ZTextField
-                inputMode="numeric"
-                label={translator('count')}
-                left={
-                  <ZIconButton
-                    accessibilityLabel={translator('decrease')}
-                    color={colors.primary}
-                    name="remove"
-                    onPress={() => step(-1)}
-                    variant="soft"
-                  />
-                }
-                onBlur={field.onBlur}
-                onChangeText={field.onChange}
-                onSubmitEditing={onSubmit}
-                right={
-                  <ZIconButton
-                    accessibilityLabel={translator('increase')}
-                    color={colors.primary}
-                    name="add"
-                    onPress={() => step(1)}
-                    variant="soft"
-                  />
-                }
-                style={styles.countInput}
+        <ZFormSection icon="inventory-2" title={translator('product')}>
+          <ZButton
+            icon="qr-code-scanner"
+            onPress={() => setIsScannerOpen(true)}
+            title={translator('scan_code')}
+            variant="soft"
+          />
+          <ZSelect
+            clearable
+            icon="category"
+            label={translator('category')}
+            onChange={onCategoryChange}
+            options={categoryOptions}
+            searchable
+            value={categoryFilter}
+          />
+          <Controller
+            control={control}
+            name="product_id"
+            render={({ field }) => (
+              <ZSelect
+                clearable
+                icon="inventory-2"
+                label={translator('product')}
+                onChange={field.onChange}
+                options={productOptions}
+                searchable
                 value={field.value}
               />
-            );
-          }}
-        />
-      </ZFormSection>
-    </ZFormScreen>
+            )}
+          />
+          <Controller
+            control={control}
+            name="count"
+            render={({ field }) => {
+              const step = (delta: number) =>
+                field.onChange(String(Math.max(0, (Number(field.value) || 0) + delta)));
+              return (
+                <ZTextField
+                  inputMode="numeric"
+                  label={translator('count')}
+                  left={
+                    <ZIconButton
+                      accessibilityLabel={translator('decrease')}
+                      color={colors.primary}
+                      name="remove"
+                      onPress={() => step(-1)}
+                      variant="soft"
+                    />
+                  }
+                  onBlur={field.onBlur}
+                  onChangeText={field.onChange}
+                  onSubmitEditing={onSubmit}
+                  right={
+                    <ZIconButton
+                      accessibilityLabel={translator('increase')}
+                      color={colors.primary}
+                      name="add"
+                      onPress={() => step(1)}
+                      variant="soft"
+                    />
+                  }
+                  style={styles.countInput}
+                  value={field.value}
+                />
+              );
+            }}
+          />
+        </ZFormSection>
+      </ZFormScreen>
+      <ZScannerModal
+        onClose={() => setIsScannerOpen(false)}
+        onScanned={onScanned}
+        visible={isScannerOpen}
+      />
+    </>
   );
 };
 
