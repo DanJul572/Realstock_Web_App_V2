@@ -97,3 +97,63 @@ export type TransactionRowType = {
   transaction_type_name: string;
   user_name: string;
 };
+
+export type AuditEntityType = 'category' | 'login' | 'product' | 'transaction' | 'user';
+
+export type AuditEventType =
+  'created' | 'deleted' | 'login' | 'login_failed' | 'logout' | 'updated';
+
+export type AuditValuesType = Record<string, string | number | boolean | null>;
+
+export type AuditSummaryType = Record<AuditEntityType, number>;
+
+export type AuditLogRowType = {
+  // Null for a failed login with an unknown email.
+  auditable_id: number | null;
+  created_at: string;
+  event: AuditEventType;
+  id: number;
+  label: string | null;
+  user_name: string | null;
+};
+
+export type LogUserType = {
+  id: number;
+  name: string;
+};
+
+export type AuditLogDetailType = {
+  auditable_id: number | null;
+  auditable_type: AuditEntityType;
+  created_at: string;
+  event: AuditEventType;
+  id: number;
+  ip_address: string | null;
+  label: string | null;
+  new_values: AuditValuesType | null;
+  old_values: AuditValuesType | null;
+  url: string | null;
+  user: LogUserType | null;
+  user_agent: string | null;
+};
+
+export type ErrorLogRowType = {
+  created_at: string;
+  id: number;
+  message: string | null;
+  method: string;
+  status_code: number;
+  url: string;
+  user_name: string | null;
+};
+
+export type ErrorLogDetailType = Omit<ErrorLogRowType, 'user_name'> & {
+  exception_class: string | null;
+  exception_location: string | null;
+  exception_message: string | null;
+  ip_address: string | null;
+  request_body: Record<string, unknown> | null;
+  trace: string | null;
+  user: LogUserType | null;
+  user_agent: string | null;
+};

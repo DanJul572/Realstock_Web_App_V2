@@ -31,6 +31,11 @@ export default function AppLayout() {
         <Stack.Screen name="category/form" />
         <Stack.Screen name="user/index" options={{ title: translator('user') }} />
         <Stack.Screen name="user/form" />
+        <Stack.Screen name="audit/index" options={{ title: translator('audit_trail') }} />
+        <Stack.Screen name="audit/[type]" />
+        <Stack.Screen name="audit/detail/[id]" options={{ title: translator('detail') }} />
+        <Stack.Screen name="error-log/index" options={{ title: translator('error_log') }} />
+        <Stack.Screen name="error-log/[id]" options={{ title: translator('detail') }} />
       </Stack.Protected>
     </Stack>
   );

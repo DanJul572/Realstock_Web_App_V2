@@ -62,6 +62,20 @@ const menuItems: MenuItemType[] = [
     label: translator('category'),
   },
   { adminOnly: true, color: colors.error, href: '/user', icon: 'group', label: translator('user') },
+  {
+    adminOnly: true,
+    color: colors.primaryDark,
+    href: '/audit',
+    icon: 'history',
+    label: translator('audit_trail'),
+  },
+  {
+    adminOnly: true,
+    color: colors.error,
+    href: '/error-log',
+    icon: 'bug-report',
+    label: translator('error_log'),
+  },
 ];
 
 // Shortcuts to every page; only Dashboard, Scan and Transaction are tabs.
