@@ -20,6 +20,7 @@ import {
 import { useAlert } from '@/context/AlertContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLoader } from '@/context/LoaderContext';
+import useBottomInset from '@/hooks/useBottomInset';
 import { formatCurrency, formatNumber } from '@/lib/format';
 import getErrorMessage from '@/lib/getErrorMessage';
 import { printLabels } from '@/lib/labels';
@@ -32,6 +33,7 @@ const ProductDetailScreen = () => {
   const router = useRouter();
   const { isAdmin } = useAuth();
   const { showAlert } = useAlert();
+  const bottomInset = useBottomInset();
   const { hideLoader, showLoader } = useLoader();
   const [product, setProduct] = useState<ProductDetailType | null>(null);
   const [copies, setCopies] = useState(1);
@@ -73,7 +75,10 @@ const ProductDetailScreen = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} style={styles.screen}>
+    <ScrollView
+      contentContainerStyle={[styles.content, { paddingBottom: spacing.lg + bottomInset }]}
+      style={styles.screen}
+    >
       <View style={styles.imageCard}>
         {product.image ? (
           <Image contentFit="contain" source={{ uri: product.image }} style={styles.image} />

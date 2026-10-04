@@ -2,6 +2,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { ComponentProps, useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   colors,
@@ -34,6 +35,7 @@ const DashboardScreen = () => {
   const router = useRouter();
   const { isAdmin, session } = useAuth();
   const { showAlert } = useAlert();
+  const insets = useSafeAreaInsets();
   const [dataCount, setDataCount] = useState<DashboardCountType>({
     productCount: 0,
     userCount: 0,
@@ -54,7 +56,7 @@ const DashboardScreen = () => {
       enableLoadMore={false}
       enableToolbar={false}
       header={
-        <View>
+        <View style={{ paddingTop: insets.top }}>
           <View style={[styles.hero, gradient(gradients.primary)]}>
             <View style={styles.heroCircle} />
             <View style={styles.heroTop}>

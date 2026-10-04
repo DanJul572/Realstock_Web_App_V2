@@ -1,6 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ZAvatar from '@/components/ZAvatar';
 import ZBadge from '@/components/ZBadge';
@@ -15,6 +16,7 @@ import translator from '@/lib/translator';
 
 const UserMenu = () => {
   const { isAdmin, session, signOut } = useAuth();
+  const insets = useSafeAreaInsets();
   const { showAlert } = useAlert();
   const { hideLoader, showLoader } = useLoader();
   const [isOpen, setIsOpen] = useState(false);
@@ -53,7 +55,7 @@ const UserMenu = () => {
 
       <Modal animationType="fade" onRequestClose={close} transparent visible={isOpen}>
         <Pressable onPress={close} style={styles.backdrop}>
-          <View style={styles.menu}>
+          <View style={[styles.menu, { top: 60 + insets.top }]}>
             <View style={styles.profile}>
               <ZAvatar name={username} shape="circle" size={44} />
               <View style={styles.profileText}>
@@ -123,7 +125,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'absolute',
     right: spacing.md,
-    top: 60,
   },
   profile: {
     alignItems: 'center',

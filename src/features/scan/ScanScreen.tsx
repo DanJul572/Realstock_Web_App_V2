@@ -3,6 +3,7 @@ import { isAxiosError } from 'axios';
 import { useIsFocused, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ZButton from '@/components/ZButton';
 import ZCodeScanner from '@/components/ZCodeScanner';
@@ -11,7 +12,7 @@ import { colors, contentMaxWidth, radius, shadows, spacing, typography } from '@
 import { useAlert } from '@/context/AlertContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLoader } from '@/context/LoaderContext';
-import useTabBarOverlap from '@/hooks/useTabBarOverlap';
+import useBottomInset from '@/hooks/useBottomInset';
 import getErrorMessage from '@/lib/getErrorMessage';
 import request from '@/lib/request';
 import translator from '@/lib/translator';
@@ -25,7 +26,8 @@ const ScanScreen = () => {
   const { hideLoader, showLoader } = useLoader();
   const [isBusy, setIsBusy] = useState(false);
   const [notFoundCode, setNotFoundCode] = useState<string | null>(null);
-  const tabBarOverlap = useTabBarOverlap();
+  const bottomInset = useBottomInset();
+  const insets = useSafeAreaInsets();
 
   const findProduct = async (code: string) => {
     if (isBusy) {
@@ -56,12 +58,12 @@ const ScanScreen = () => {
           onScanned={findProduct}
           paused={isBusy || notFoundCode !== null}
         />
-        <View pointerEvents="none" style={styles.titleBar}>
+        <View pointerEvents="none" style={[styles.titleBar, { top: spacing.lg + 4 + insets.top }]}>
           <Text style={styles.title}>{translator('scan_code')}</Text>
         </View>
       </View>
 
-      <View style={[styles.panel, { paddingBottom: spacing.lg + tabBarOverlap }]}>
+      <View style={[styles.panel, { paddingBottom: spacing.lg + bottomInset }]}>
         {notFoundCode ? (
           <View accessibilityRole="alert" style={styles.notFound}>
             <View style={styles.notFoundIcon}>
@@ -111,7 +113,6 @@ const styles = StyleSheet.create({
   titleBar: {
     left: spacing.lg,
     position: 'absolute',
-    top: spacing.lg + 4,
   },
   title: {
     ...typography.subtitle,

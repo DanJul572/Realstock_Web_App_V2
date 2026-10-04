@@ -12,6 +12,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ZTextField, { fieldStyles } from '@/components/ZTextField';
 import { colors, radius, shadows, spacing, typography } from '@/constants/theme';
@@ -47,6 +48,7 @@ const ZSelect = ({
   value,
   variant = 'field',
 }: PropsType) => {
+  const insets = useSafeAreaInsets();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [translateY] = useState(() => new Animated.Value(0));
@@ -140,7 +142,7 @@ const ZSelect = ({
       <Modal animationType="fade" onRequestClose={close} transparent visible={isOpen}>
         <Pressable onPress={close} style={styles.backdrop}>
           <Animated.View style={[styles.sheetFrame, { transform: [{ translateY }] }]}>
-            <Pressable style={styles.sheet}>
+            <Pressable style={[styles.sheet, { paddingBottom: spacing.xl + insets.bottom }]}>
               <View {...dragResponder.panHandlers} style={styles.dragZone}>
                 <View style={styles.handle} />
                 <Text style={styles.sheetTitle}>{label ?? placeholder}</Text>
@@ -243,7 +245,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: radius.xl,
     flexShrink: 1,
     gap: spacing.md,
-    paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
   },
   // The handle + title strip is the drag target, so the option list can
