@@ -1,14 +1,17 @@
-// Web-first: backed by localStorage. Swap the implementation for
-// expo-secure-store when the app targets Android/iOS.
+import * as SecureStore from 'expo-secure-store';
+
+// Android/iOS: the session is kept in the device keychain / keystore.
+// Web uses storage.web.ts (localStorage). Keys may only contain letters,
+// digits, ".", "-" and "_".
 const storage = {
-  async getItem(key: string): Promise<string | null> {
-    return globalThis.localStorage?.getItem(key) ?? null;
+  getItem(key: string): Promise<string | null> {
+    return SecureStore.getItemAsync(key);
   },
-  async setItem(key: string, value: string): Promise<void> {
-    globalThis.localStorage?.setItem(key, value);
+  setItem(key: string, value: string): Promise<void> {
+    return SecureStore.setItemAsync(key, value);
   },
-  async removeItem(key: string): Promise<void> {
-    globalThis.localStorage?.removeItem(key);
+  removeItem(key: string): Promise<void> {
+    return SecureStore.deleteItemAsync(key);
   },
 };
 

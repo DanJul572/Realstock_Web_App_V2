@@ -44,8 +44,30 @@ export const code128Svg = (text: string): string | null => {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${bits.length + quietZone * 2} ${height}" preserveAspectRatio="none" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${path}" fill="#000"/></svg>`;
 };
 
-export const svgDataUri = (svg: string) =>
-  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+const base64Alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+// Base64 of an ASCII string. `btoa` is not available on every engine (it
+// crashed the label on Android), so this does not rely on it.
+const asciiToBase64 = (text: string): string => {
+  let output = '';
+  for (let index = 0; index < text.length; index += 3) {
+    const remaining = text.length - index;
+    const triple =
+      (text.charCodeAt(index) << 16) |
+      ((remaining > 1 ? text.charCodeAt(index + 1) : 0) << 8) |
+      (remaining > 2 ? text.charCodeAt(index + 2) : 0);
+    output +=
+      base64Alphabet[(triple >> 18) & 63] +
+      base64Alphabet[(triple >> 12) & 63] +
+      (remaining > 1 ? base64Alphabet[(triple >> 6) & 63] : '=') +
+      (remaining > 2 ? base64Alphabet[triple & 63] : '=');
+  }
+  return output;
+};
+
+// Base64 because Android's image loader only accepts base64 data URIs (a
+// url-encoded SVG only rendered on web). The SVG markup is plain ASCII.
+export const svgDataUri = (svg: string) => `data:image/svg+xml;base64,${asciiToBase64(svg)}`;
 
 export type LabelType = {
   code: string;
