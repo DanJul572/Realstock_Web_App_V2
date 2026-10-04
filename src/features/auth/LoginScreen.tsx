@@ -4,7 +4,15 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import ZButton from '@/components/ZButton';
 import ZTextField from '@/components/ZTextField';
-import { colors, gradient, gradients, radius, shadows, spacing, typography } from '@/constants/theme';
+import {
+  colors,
+  gradient,
+  gradients,
+  radius,
+  shadows,
+  spacing,
+  typography,
+} from '@/constants/theme';
 import { useAlert } from '@/context/AlertContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLoader } from '@/context/LoaderContext';
@@ -89,7 +97,13 @@ const LoginScreen = () => {
             />
           )}
         />
-        <ZButton icon="login" onPress={onSubmit} size="lg" style={styles.button} title={translator('login')} />
+        <ZButton
+          icon="login"
+          onPress={onSubmit}
+          size="lg"
+          style={styles.button}
+          title={translator('login')}
+        />
       </View>
     </ScrollView>
   );

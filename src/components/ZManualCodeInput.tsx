@@ -37,7 +37,12 @@ const ZManualCodeInput = ({ onSubmit }: PropsType) => {
           value={code}
         />
       </View>
-      <ZButton disabled={!code.trim()} onPress={submit} style={styles.button} title={translator('use_code')} />
+      <ZButton
+        disabled={!code.trim()}
+        onPress={submit}
+        style={styles.button}
+        title={translator('use_code')}
+      />
     </View>
   );
 };

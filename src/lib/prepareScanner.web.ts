@@ -16,7 +16,8 @@ const prepareScanner = (): Promise<void> => {
       const { setZXingModuleOverrides } = await import('barcode-detector');
       const wasm = Asset.fromModule(zxingWasm);
       setZXingModuleOverrides({
-        locateFile: (path: string, prefix: string) => (path.endsWith('.wasm') ? wasm.uri : prefix + path),
+        locateFile: (path: string, prefix: string) =>
+          path.endsWith('.wasm') ? wasm.uri : prefix + path,
       });
     })();
   }

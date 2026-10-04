@@ -1,4 +1,5 @@
-export type CameraIssueType = 'denied' | 'in_use' | 'insecure' | 'not_found' | 'unknown' | 'unsupported';
+export type CameraIssueType =
+  'denied' | 'in_use' | 'insecure' | 'not_found' | 'unknown' | 'unsupported';
 
 // Native platforms go through the OS permission dialog (expo-camera).
 export const getCameraSupportIssue = (): CameraIssueType | null => null;

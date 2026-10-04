@@ -17,6 +17,8 @@ export type OptionType = {
 
 export type ColumnType<T> = {
   field: keyof T & string;
+  // Display text for the value; defaults to the raw value.
+  format?: (value: T[keyof T]) => string;
   label: string;
 };
 

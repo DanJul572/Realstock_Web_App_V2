@@ -44,7 +44,8 @@ export const code128Svg = (text: string): string | null => {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${bits.length + quietZone * 2} ${height}" preserveAspectRatio="none" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${path}" fill="#000"/></svg>`;
 };
 
-export const svgDataUri = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+export const svgDataUri = (svg: string) =>
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
 export type LabelType = {
   code: string;
@@ -103,7 +104,14 @@ export const printLabels = async (label: LabelType, copies: number) => {
 
   const iframe = document.createElement('iframe');
   iframe.setAttribute('aria-hidden', 'true');
-  Object.assign(iframe.style, { border: '0', height: '0', position: 'fixed', right: '0', bottom: '0', width: '0' });
+  Object.assign(iframe.style, {
+    border: '0',
+    height: '0',
+    position: 'fixed',
+    right: '0',
+    bottom: '0',
+    width: '0',
+  });
   document.body.appendChild(iframe);
 
   await new Promise<void>((resolve) => {

@@ -173,7 +173,9 @@ const ZSelect = ({
                       <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
                         {item.label}
                       </Text>
-                      {isSelected && <MaterialIcons color={colors.primary} name="check" size={20} />}
+                      {isSelected && (
+                        <MaterialIcons color={colors.primary} name="check" size={20} />
+                      )}
                     </Pressable>
                   );
                 }}

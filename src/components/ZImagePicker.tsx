@@ -1,10 +1,11 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import ZButton from '@/components/ZButton';
+import ZIconButton from '@/components/ZIconButton';
 import { fieldStyles } from '@/components/ZTextField';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, radius, shadows, spacing } from '@/constants/theme';
 import translator from '@/lib/translator';
 
 type PropsType = {
@@ -12,54 +13,64 @@ type PropsType = {
   label: string;
   onClear: () => void;
   onPick: () => void;
+  onTakePhoto: () => void;
   previewUri: string | null;
 };
 
-const ZImagePicker = ({ fileName, label, onClear, onPick, previewUri }: PropsType) => {
+const ZImagePicker = ({ fileName, label, onClear, onPick, onTakePhoto, previewUri }: PropsType) => {
+  const sourceButtons = (
+    <View style={styles.sourceActions}>
+      <ZButton
+        accessibilityLabel={`${translator('pick_image')} ${label}`}
+        icon="photo-library"
+        onPress={onPick}
+        style={styles.sourceButton}
+        title={translator('pick_image')}
+        variant="soft"
+      />
+      <ZButton
+        accessibilityLabel={`${translator('take_photo')} ${label}`}
+        icon="photo-camera"
+        onPress={onTakePhoto}
+        style={styles.sourceButton}
+        title={translator('take_photo')}
+        variant="soft"
+      />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <Text style={fieldStyles.label}>{label}</Text>
       {previewUri ? (
         <View style={styles.previewCard}>
-          <Image contentFit="contain" source={{ uri: previewUri }} style={styles.preview} />
+          <View>
+            <Image contentFit="contain" source={{ uri: previewUri }} style={styles.preview} />
+            <View style={styles.clearButton}>
+              <ZIconButton
+                accessibilityLabel={translator('clear')}
+                color={colors.error}
+                name="delete-outline"
+                onPress={onClear}
+              />
+            </View>
+          </View>
           <View style={styles.previewFooter}>
             <MaterialIcons color={colors.primary} name="image" size={20} />
             <Text numberOfLines={1} style={styles.fileName}>
               {fileName}
             </Text>
           </View>
-          <View style={styles.previewActions}>
-            <ZButton
-              accessibilityLabel={label}
-              icon="swap-horiz"
-              onPress={onPick}
-              style={styles.previewButton}
-              title={translator('change_image')}
-              variant="soft"
-            />
-            <ZButton
-              color={colors.error}
-              icon="delete-outline"
-              onPress={onClear}
-              style={styles.previewButton}
-              title={translator('clear')}
-              variant="soft"
-            />
-          </View>
+          {sourceButtons}
         </View>
       ) : (
-        <Pressable
-          accessibilityLabel={label}
-          accessibilityRole="button"
-          onPress={onPick}
-          style={({ hovered }) => [styles.dropzone, hovered && styles.dropzoneHovered]}
-        >
+        <View style={styles.dropzone}>
           <View style={styles.dropzoneIcon}>
             <MaterialIcons color={colors.primary} name="add-photo-alternate" size={28} />
           </View>
-          <Text style={styles.dropzoneTitle}>{translator('pick_image')}</Text>
           <Text style={styles.dropzoneHint}>PNG, JPG, WEBP</Text>
-        </Pressable>
+          {sourceButtons}
+        </View>
       )}
     </View>
   );
@@ -76,11 +87,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderStyle: 'dashed',
     borderWidth: 2,
-    gap: spacing.xs,
+    gap: spacing.sm,
     paddingVertical: spacing.xl,
-  },
-  dropzoneHovered: {
-    backgroundColor: colors.primarySoft,
   },
   dropzoneIcon: {
     alignItems: 'center',
@@ -88,13 +96,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.round,
     height: 56,
     justifyContent: 'center',
-    marginBottom: spacing.xs,
     width: 56,
-  },
-  dropzoneTitle: {
-    color: colors.primary,
-    fontSize: 15,
-    fontWeight: '600',
   },
   dropzoneHint: {
     color: colors.textSubtle,
@@ -124,13 +126,23 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: '500',
   },
-  previewActions: {
+  clearButton: {
+    ...shadows.sm,
+    backgroundColor: colors.surface,
+    borderRadius: radius.round,
+    position: 'absolute',
+    right: spacing.sm,
+    top: spacing.sm,
+  },
+  sourceActions: {
+    alignSelf: 'stretch',
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
   },
-  previewButton: {
-    flex: 1,
+  sourceButton: {
+    flexGrow: 1,
   },
 });
 

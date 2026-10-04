@@ -11,6 +11,7 @@ import { colors, contentMaxWidth, radius, shadows, spacing, typography } from '@
 import { useAlert } from '@/context/AlertContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLoader } from '@/context/LoaderContext';
+import useTabBarOverlap from '@/hooks/useTabBarOverlap';
 import getErrorMessage from '@/lib/getErrorMessage';
 import request from '@/lib/request';
 import translator from '@/lib/translator';
@@ -24,6 +25,7 @@ const ScanScreen = () => {
   const { hideLoader, showLoader } = useLoader();
   const [isBusy, setIsBusy] = useState(false);
   const [notFoundCode, setNotFoundCode] = useState<string | null>(null);
+  const tabBarOverlap = useTabBarOverlap();
 
   const findProduct = async (code: string) => {
     if (isBusy) {
@@ -59,7 +61,7 @@ const ScanScreen = () => {
         </View>
       </View>
 
-      <View style={styles.panel}>
+      <View style={[styles.panel, { paddingBottom: spacing.lg + tabBarOverlap }]}>
         {notFoundCode ? (
           <View accessibilityRole="alert" style={styles.notFound}>
             <View style={styles.notFoundIcon}>

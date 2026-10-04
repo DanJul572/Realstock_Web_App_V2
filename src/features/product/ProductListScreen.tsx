@@ -8,7 +8,7 @@ import { colors, radius, shadows, spacing } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import useDeleteRecord from '@/hooks/useDeleteRecord';
 import usePaginatedList from '@/hooks/usePaginatedList';
-import { formatNumber } from '@/lib/format';
+import { formatCurrency, formatNumber } from '@/lib/format';
 import translator from '@/lib/translator';
 import { ColumnType, ProductRowType } from '@/types';
 
@@ -25,8 +25,8 @@ const getColumns = (isAdmin: boolean): ColumnType<ProductRowType>[] => {
   ];
   if (isAdmin) {
     columns.push(
-      { field: 'price_1', label: `${translator('price')} 1` },
-      { field: 'price_2', label: `${translator('price')} 2` }
+      { field: 'price_1', format: formatCurrency, label: `${translator('price')} 1` },
+      { field: 'price_2', format: formatCurrency, label: `${translator('price')} 2` }
     );
   }
   return columns;
@@ -78,9 +78,11 @@ const ProductListScreen = () => {
             label={`${translator('stock')} ${formatNumber(item.stock)}`}
           />
           {isAdmin && (
-            <ZBadge color={colors.primary} icon="sell" label={formatNumber(item.price_1)} />
+            <ZBadge color={colors.primary} icon="sell" label={formatCurrency(item.price_1)} />
           )}
-          {item.code ? <ZBadge color={colors.textMuted} icon="qr-code-2" label={item.code} /> : null}
+          {item.code ? (
+            <ZBadge color={colors.textMuted} icon="qr-code-2" label={item.code} />
+          ) : null}
         </>
       )}
     />

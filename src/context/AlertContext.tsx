@@ -1,5 +1,13 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, shadows, spacing, withAlpha } from '@/constants/theme';

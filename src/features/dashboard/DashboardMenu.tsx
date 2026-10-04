@@ -3,7 +3,16 @@ import { Href, useRouter } from 'expo-router';
 import { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, gradient, gradients, radius, shadows, spacing, typography, withAlpha } from '@/constants/theme';
+import {
+  colors,
+  gradient,
+  gradients,
+  radius,
+  shadows,
+  spacing,
+  typography,
+  withAlpha,
+} from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import translator from '@/lib/translator';
 
@@ -24,10 +33,34 @@ const menuItems: MenuItemType[] = [
     isHighlighted: true,
     label: translator('scan_code'),
   },
-  { adminOnly: true, color: colors.success, href: '/transaction', icon: 'point-of-sale', label: translator('transaction') },
+  {
+    adminOnly: true,
+    color: colors.success,
+    href: '/transaction',
+    icon: 'point-of-sale',
+    label: translator('create_transaction'),
+  },
+  {
+    color: colors.success,
+    href: '/transaction/list',
+    icon: 'receipt-long',
+    label: translator('transaction_list'),
+  },
   { color: colors.primary, href: '/product', icon: 'inventory-2', label: translator('product') },
-  { adminOnly: true, color: colors.warning, href: '/product/form', icon: 'add-box', label: translator('add_product') },
-  { adminOnly: true, color: colors.info, href: '/category', icon: 'category', label: translator('category') },
+  {
+    adminOnly: true,
+    color: colors.warning,
+    href: '/product/form',
+    icon: 'add-box',
+    label: translator('add_product'),
+  },
+  {
+    adminOnly: true,
+    color: colors.info,
+    href: '/category',
+    icon: 'category',
+    label: translator('category'),
+  },
   { adminOnly: true, color: colors.error, href: '/user', icon: 'group', label: translator('user') },
 ];
 
@@ -65,7 +98,10 @@ const DashboardMenu = () => {
                 size={item.isHighlighted ? 30 : 26}
               />
             </View>
-            <Text numberOfLines={2} style={[styles.label, item.isHighlighted && styles.labelHighlighted]}>
+            <Text
+              numberOfLines={2}
+              style={[styles.label, item.isHighlighted && styles.labelHighlighted]}
+            >
               {item.label}
             </Text>
           </Pressable>

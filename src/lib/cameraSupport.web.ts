@@ -1,4 +1,5 @@
-export type CameraIssueType = 'denied' | 'in_use' | 'insecure' | 'not_found' | 'unknown' | 'unsupported';
+export type CameraIssueType =
+  'denied' | 'in_use' | 'insecure' | 'not_found' | 'unknown' | 'unsupported';
 
 // Browsers only expose the camera on HTTPS (or localhost); on plain HTTP
 // `navigator.mediaDevices` is undefined and no permission prompt ever shows.

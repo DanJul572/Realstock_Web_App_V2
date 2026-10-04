@@ -3,7 +3,7 @@ import { BottomTabBarButtonProps, Tabs } from 'expo-router/js-tabs';
 import { ComponentProps } from 'react';
 import { ColorValue, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, gradient, gradients, radius, shadows } from '@/constants/theme';
+import { colors, gradient, gradients, radius, scanTabButtonRise, shadows } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import UserMenu from '@/features/auth/UserMenu';
 import translator from '@/lib/translator';
@@ -64,7 +64,11 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ headerShown: false, tabBarIcon: tabIcon('dashboard'), title: translator('dashboard') }}
+        options={{
+          headerShown: false,
+          tabBarIcon: tabIcon('dashboard'),
+          title: translator('dashboard'),
+        }}
       />
       <Tabs.Screen
         name="scan"
@@ -133,7 +137,7 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     height: 66,
     justifyContent: 'center',
-    marginTop: -30,
+    marginTop: -scanTabButtonRise,
     width: 66,
   },
   scanButtonPressed: {

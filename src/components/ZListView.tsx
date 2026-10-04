@@ -1,6 +1,15 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ReactNode, useEffect, useState } from 'react';
-import { ActivityIndicator, Animated, FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  FlatList,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import ZAvatar from '@/components/ZAvatar';
 import ZIconButton from '@/components/ZIconButton';
@@ -8,10 +17,13 @@ import ZSelect from '@/components/ZSelect';
 import ZTextField from '@/components/ZTextField';
 import { colors, contentMaxWidth, radius, shadows, spacing, typography } from '@/constants/theme';
 import { PaginatedListType } from '@/hooks/usePaginatedList';
+import useTabBarOverlap from '@/hooks/useTabBarOverlap';
 import translator from '@/lib/translator';
 import { ColumnType } from '@/types';
 
 const searchDebounceMs = 1000;
+// Bottom space so the last row can scroll clear of the add button.
+const fabClearance = 96;
 
 type PropsType<T> = {
   columns: ColumnType<T>[];
@@ -19,6 +31,10 @@ type PropsType<T> = {
   enableDeleteButton?: boolean;
   enableDetailButton?: boolean;
   enableEditButton?: boolean;
+  // Off to show only the first page (e.g. a "latest records" preview).
+  enableLoadMore?: boolean;
+  // Off to hide the search and sort controls.
+  enableToolbar?: boolean;
   getSubtitle?: (item: T) => string;
   getTitle: (item: T) => string;
   header?: ReactNode;
@@ -33,14 +49,18 @@ type PropsType<T> = {
 };
 
 const ZListView = <T,>(props: PropsType<T>) => {
-  const { list } = props;
+  const { enableLoadMore = true, enableToolbar = true, list } = props;
+  const tabBarOverlap = useTabBarOverlap();
   const showFab = Boolean(props.enableAddButton && props.onAdd);
   const isFirstLoad = list.isLoading && !list.isRefreshing && list.rows.length === 0;
 
   return (
     <View style={styles.screen}>
       <FlatList
-        contentContainerStyle={[styles.content, showFab && styles.contentWithFab]}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: (showFab ? fabClearance : spacing.lg) + tabBarOverlap },
+        ]}
         data={list.rows}
         keyExtractor={(item) => String(item[props.idField])}
         keyboardShouldPersistTaps="handled"
@@ -53,10 +73,10 @@ const ZListView = <T,>(props: PropsType<T>) => {
         ListHeaderComponent={
           <View style={styles.header}>
             {props.header}
-            <Toolbar columns={props.columns} list={list} />
+            {enableToolbar && <Toolbar columns={props.columns} list={list} />}
           </View>
         }
-        onEndReached={list.loadMore}
+        onEndReached={enableLoadMore ? list.loadMore : undefined}
         onEndReachedThreshold={0.5}
         onRefresh={list.refresh}
         refreshing={list.isRefreshing}
@@ -138,7 +158,9 @@ const Toolbar = <T,>({ columns, list }: ToolbarPropsType<T>) => {
             name={isAscending ? 'arrow-upward' : 'arrow-downward'}
             size={16}
           />
-          <Text style={styles.orderText}>{translator(isAscending ? 'ascending' : 'descending')}</Text>
+          <Text style={styles.orderText}>
+            {translator(isAscending ? 'ascending' : 'descending')}
+          </Text>
         </Pressable>
         <Text style={styles.total}>
           {list.total} {translator('results')}
@@ -192,7 +214,11 @@ const ListItem = <T,>(props: ListItemPropsType<T>) => {
               style={[styles.descriptionRow, index > 0 && styles.descriptionDivider]}
             >
               <Text style={styles.descriptionLabel}>{column.label}</Text>
-              <Text style={styles.descriptionValue}>{String(item[column.field] ?? '-')}</Text>
+              <Text style={styles.descriptionValue}>
+                {column.format
+                  ? column.format(item[column.field])
+                  : String(item[column.field] ?? '-')}
+              </Text>
             </View>
           ))}
         </View>
@@ -284,9 +310,6 @@ const styles = StyleSheet.create({
     maxWidth: contentMaxWidth,
     padding: spacing.lg,
     width: '100%',
-  },
-  contentWithFab: {
-    paddingBottom: 96,
   },
   header: {
     gap: spacing.lg,

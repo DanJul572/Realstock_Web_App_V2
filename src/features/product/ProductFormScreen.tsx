@@ -15,7 +15,7 @@ import { useLoader } from '@/context/LoaderContext';
 import useCategoryOptions from '@/features/category/useCategoryOptions';
 import useRecordForm from '@/hooks/useRecordForm';
 import getErrorMessage from '@/lib/getErrorMessage';
-import pickResizedImage from '@/lib/pickResizedImage';
+import pickResizedImage, { ImageSourceType } from '@/lib/pickResizedImage';
 import { generateUniqueCode, maxCodeLength } from '@/lib/productCode';
 import translator from '@/lib/translator';
 import { ProductType } from '@/types';
@@ -113,13 +113,13 @@ const ProductFormScreen = () => {
   const image = watch('image');
   const imageName = watch('imageName');
 
-  const onPickImage = async () => {
+  const onPickImage = async (source: ImageSourceType) => {
     if (isPicking) {
       return;
     }
     setIsPicking(true);
     try {
-      const picked = await pickResizedImage();
+      const picked = await pickResizedImage(source);
       if (picked) {
         setValue('image', picked.dataUrl);
         setValue('imageName', picked.name);
@@ -180,12 +180,22 @@ const ProductFormScreen = () => {
         </ZFormSection>
 
         <ZFormSection icon="inventory-2" title={translator('product_info')}>
-          <TextField control={control} icon="label-outline" label={translator('name')} name="name" />
+          <TextField
+            control={control}
+            icon="label-outline"
+            label={translator('name')}
+            name="name"
+          />
           <ZFormRow>
             <TextField control={control} icon="style" label={translator('type')} name="type" />
             <TextField control={control} icon="straighten" label={translator('size')} name="size" />
           </ZFormRow>
-          <TextField control={control} icon="texture" label={translator('surface')} name="surface" />
+          <TextField
+            control={control}
+            icon="texture"
+            label={translator('surface')}
+            name="surface"
+          />
         </ZFormSection>
 
         <ZFormSection icon="payments" title={translator('stock_and_price')}>
@@ -234,7 +244,8 @@ const ProductFormScreen = () => {
             fileName={imageName}
             label={translator('image')}
             onClear={onClearImage}
-            onPick={onPickImage}
+            onPick={() => onPickImage('library')}
+            onTakePhoto={() => onPickImage('camera')}
             previewUri={image}
           />
         </ZFormSection>

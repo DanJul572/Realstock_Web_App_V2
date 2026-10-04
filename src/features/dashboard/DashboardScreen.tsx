@@ -3,22 +3,25 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { ComponentProps, useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import ZAvatar from '@/components/ZAvatar';
-import ZBadge from '@/components/ZBadge';
-import ZListView from '@/components/ZListView';
-import { colors, gradient, gradients, radius, shadows, spacing, typography, withAlpha } from '@/constants/theme';
+import {
+  colors,
+  gradient,
+  gradients,
+  radius,
+  shadows,
+  spacing,
+  typography,
+  withAlpha,
+} from '@/constants/theme';
 import { useAlert } from '@/context/AlertContext';
 import { useAuth } from '@/context/AuthContext';
 import UserMenu from '@/features/auth/UserMenu';
 import DashboardMenu from '@/features/dashboard/DashboardMenu';
-import transactionColumns, { isOutgoing } from '@/features/transaction/transactionColumns';
-import useDeleteRecord from '@/hooks/useDeleteRecord';
-import usePaginatedList from '@/hooks/usePaginatedList';
+import TransactionListView from '@/features/transaction/TransactionListView';
 import { formatNumber } from '@/lib/format';
 import getErrorMessage from '@/lib/getErrorMessage';
 import request from '@/lib/request';
 import translator from '@/lib/translator';
-import { TransactionRowType } from '@/types';
 
 type DashboardCountType = {
   productCount: number;
@@ -36,12 +39,6 @@ const DashboardScreen = () => {
     userCount: 0,
   });
 
-  const transactions = usePaginatedList<TransactionRowType>({
-    defaultSort: { field: 'transaction_created_at', order: 'desc' },
-    endpoint: '/transactions',
-  });
-  const onDelete = useDeleteRecord('/transactions', transactions.reload);
-
   useFocusEffect(
     useCallback(() => {
       request
@@ -51,12 +48,11 @@ const DashboardScreen = () => {
     }, [showAlert])
   );
 
+  // Only the latest transactions; the full list has its own page.
   return (
-    <ZListView
-      columns={transactionColumns()}
-      enableDeleteButton={isAdmin}
-      getSubtitle={(item) => `${item.user_name} · ${item.transaction_created_at}`}
-      getTitle={(item) => item.product_name}
+    <TransactionListView
+      enableLoadMore={false}
+      enableToolbar={false}
       header={
         <View>
           <View style={[styles.hero, gradient(gradients.primary)]}>
@@ -87,33 +83,23 @@ const DashboardScreen = () => {
             />
           </View>
           <DashboardMenu />
-          <Text style={styles.sectionTitle}>{translator('transaction_list')}</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{translator('latest_transactions')}</Text>
+            <Pressable
+              accessibilityLabel={`${translator('view_all')} ${translator('transaction')}`}
+              accessibilityRole="button"
+              onPress={() => router.push('/transaction/list')}
+              style={({ hovered, pressed }) => [
+                styles.sectionAction,
+                (hovered || pressed) && styles.sectionActionPressed,
+              ]}
+            >
+              <Text style={styles.sectionActionText}>{translator('view_all')}</Text>
+              <MaterialIcons color={colors.primary} name="arrow-forward" size={16} />
+            </Pressable>
+          </View>
         </View>
       }
-      idField="transaction_id"
-      list={transactions}
-      onDelete={onDelete}
-      renderLeading={(item) => {
-        const isOut = isOutgoing(item);
-        return (
-          <ZAvatar
-            color={isOut ? colors.error : colors.success}
-            icon={isOut ? 'north-east' : 'south-west'}
-            shape="circle"
-          />
-        );
-      }}
-      renderMeta={(item) => {
-        const isOut = isOutgoing(item);
-        const color = isOut ? colors.error : colors.success;
-        return (
-          <>
-            <ZBadge color={color} label={`${isOut ? '−' : '+'}${formatNumber(item.transaction_count)}`} />
-            <ZBadge color={color} label={item.transaction_type_name} />
-            <ZBadge color={colors.textMuted} label={`${item.product_type} · ${item.product_size}`} />
-          </>
-        );
-      }}
     />
   );
 };
@@ -235,10 +221,33 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.md,
+    justifyContent: 'space-between',
+    marginTop: spacing.xl,
+  },
   sectionTitle: {
     ...typography.title,
     color: colors.text,
-    marginTop: spacing.xl,
+    flexShrink: 1,
+  },
+  sectionAction: {
+    alignItems: 'center',
+    borderRadius: radius.round,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+  },
+  sectionActionPressed: {
+    backgroundColor: colors.primarySoft,
+  },
+  sectionActionText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
 

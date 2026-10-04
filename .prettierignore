@@ -1,0 +1,6 @@
+# Files listed in .gitignore are ignored too.
+
+# Generated or vendored
+pnpm-lock.yaml
+public/
+assets/

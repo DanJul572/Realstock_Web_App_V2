@@ -87,3 +87,6 @@ export const withAlpha = (color: string, alpha: number): string => {
 };
 
 export const contentMaxWidth = 720;
+
+// How far the raised Scan Code tab button sticks out above the tab bar.
+export const scanTabButtonRise = 30;

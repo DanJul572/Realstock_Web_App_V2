@@ -8,11 +8,19 @@ import ZBadge from '@/components/ZBadge';
 import ZButton from '@/components/ZButton';
 import ZIconButton from '@/components/ZIconButton';
 import ZProductLabel from '@/components/ZProductLabel';
-import { colors, contentMaxWidth, radius, shadows, spacing, typography, withAlpha } from '@/constants/theme';
+import {
+  colors,
+  contentMaxWidth,
+  radius,
+  shadows,
+  spacing,
+  typography,
+  withAlpha,
+} from '@/constants/theme';
 import { useAlert } from '@/context/AlertContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLoader } from '@/context/LoaderContext';
-import { formatNumber } from '@/lib/format';
+import { formatCurrency, formatNumber } from '@/lib/format';
 import getErrorMessage from '@/lib/getErrorMessage';
 import { printLabels } from '@/lib/labels';
 import request from '@/lib/request';
@@ -101,13 +109,13 @@ const ProductDetailScreen = () => {
               color={colors.success}
               icon="sell"
               label={`${translator('price')} 1`}
-              value={formatNumber(product.price_1)}
+              value={formatCurrency(product.price_1)}
             />
             <InfoTile
               color={colors.success}
               icon="sell"
               label={`${translator('price')} 2`}
-              value={formatNumber(product.price_2)}
+              value={formatCurrency(product.price_2)}
             />
           </View>
         )}
@@ -120,7 +128,12 @@ const ProductDetailScreen = () => {
             title={translator('back')}
             variant="outline"
           />
-          <ZButton icon="refresh" onPress={getProduct} title={translator('refresh')} variant="soft" />
+          <ZButton
+            icon="refresh"
+            onPress={getProduct}
+            title={translator('refresh')}
+            variant="soft"
+          />
           {isAdmin && (
             <ZButton
               icon="edit"
@@ -163,7 +176,12 @@ const ProductDetailScreen = () => {
                   variant="soft"
                 />
               </View>
-              <ZButton icon="print" onPress={onPrint} style={styles.printButton} title={translator('print_label')} />
+              <ZButton
+                icon="print"
+                onPress={onPrint}
+                style={styles.printButton}
+                title={translator('print_label')}
+              />
             </View>
           </>
         ) : (

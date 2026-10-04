@@ -38,7 +38,11 @@ const UserListScreen = () => {
       onDelete={onDelete}
       onEdit={(id) => router.push({ pathname: '/user/form', params: { id } })}
       renderLeading={(item) => (
-        <ZAvatar color={item.role_id === 1 ? colors.primary : colors.info} name={item.name} shape="circle" />
+        <ZAvatar
+          color={item.role_id === 1 ? colors.primary : colors.info}
+          name={item.name}
+          shape="circle"
+        />
       )}
       renderMeta={(item) =>
         item.role_id === 1 ? (
