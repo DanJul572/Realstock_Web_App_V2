@@ -24,6 +24,8 @@ type ProductFormType = {
   category_id: string | null;
   code: string;
   image: string | null;
+  // True once an image was picked or removed, so only then `image` is sent.
+  imageChanged: boolean;
   imageName: string | null;
   name: string;
   price_1: string;
@@ -38,6 +40,7 @@ const defaultValues: ProductFormType = {
   category_id: null,
   code: '',
   image: null,
+  imageChanged: false,
   imageName: null,
   name: '',
   price_1: '0',
@@ -51,7 +54,8 @@ const defaultValues: ProductFormType = {
 const toForm = (product: ProductType): ProductFormType => ({
   category_id: product.category_id?.toString() ?? null,
   code: product.code ?? '',
-  image: null,
+  image: product.image,
+  imageChanged: false,
   imageName: null,
   name: product.name ?? '',
   price_1: String(product.price_1 ?? 0),
@@ -62,7 +66,8 @@ const toForm = (product: ProductType): ProductFormType => ({
   type: product.type ?? '',
 });
 
-// Only send `image` when a new one was picked, so editing keeps the old image.
+// Only send `image` when it was picked or removed: the loaded image is a URL the
+// API would reject, and a removed image is sent as `null`, which clears it.
 const toPayload = (form: ProductFormType) => ({
   category_id: form.category_id,
   code: form.code.trim() || null,
@@ -73,7 +78,7 @@ const toPayload = (form: ProductFormType) => ({
   stock: Number(form.stock),
   surface: form.surface,
   type: form.type,
-  ...(form.image ? { image: form.image } : {}),
+  ...(form.imageChanged ? { image: form.image } : {}),
 });
 
 const ProductFormScreen = () => {
@@ -121,8 +126,9 @@ const ProductFormScreen = () => {
     try {
       const picked = await pickResizedImage(source);
       if (picked) {
-        setValue('image', picked.dataUrl);
+        setValue('image', picked.dataUrl, { shouldDirty: true });
         setValue('imageName', picked.name);
+        setValue('imageChanged', true);
       }
     } catch (error) {
       showAlert('error', getErrorMessage(error));
@@ -132,8 +138,9 @@ const ProductFormScreen = () => {
   };
 
   const onClearImage = () => {
-    setValue('image', null);
+    setValue('image', null, { shouldDirty: true });
     setValue('imageName', null);
+    setValue('imageChanged', true);
   };
 
   const title = `${translator(isEdit ? 'edit' : 'create')} ${translator('product')}`;
@@ -264,7 +271,7 @@ type TextFieldPropsType = {
   icon: ComponentProps<typeof ZTextField>['icon'];
   inputMode?: TextInputProps['inputMode'];
   label: string;
-  name: FieldPath<ProductFormType>;
+  name: Exclude<FieldPath<ProductFormType>, 'imageChanged'>;
 };
 
 const TextField = ({ control, icon, inputMode, label, name }: TextFieldPropsType) => (

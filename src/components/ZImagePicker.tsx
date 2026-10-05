@@ -48,7 +48,7 @@ const ZImagePicker = ({ fileName, label, onClear, onPick, onTakePhoto, previewUr
             <Image contentFit="contain" source={{ uri: previewUri }} style={styles.preview} />
             <View style={styles.clearButton}>
               <ZIconButton
-                accessibilityLabel={translator('clear')}
+                accessibilityLabel={translator('remove_image')}
                 color={colors.error}
                 name="delete-outline"
                 onPress={onClear}
@@ -58,7 +58,7 @@ const ZImagePicker = ({ fileName, label, onClear, onPick, onTakePhoto, previewUr
           <View style={styles.previewFooter}>
             <MaterialIcons color={colors.primary} name="image" size={20} />
             <Text numberOfLines={1} style={styles.fileName}>
-              {fileName}
+              {fileName ?? translator('current_image')}
             </Text>
           </View>
           {sourceButtons}
