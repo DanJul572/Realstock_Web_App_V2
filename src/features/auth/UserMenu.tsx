@@ -6,19 +6,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ZAvatar from '@/components/ZAvatar';
 import ZBadge from '@/components/ZBadge';
 import { colors, radius, shadows, spacing } from '@/constants/theme';
-import { useAlert } from '@/context/AlertContext';
 import { useAuth } from '@/context/AuthContext';
-import { useLoader } from '@/context/LoaderContext';
+import useLogout from '@/features/auth/useLogout';
 import useBackToClose from '@/hooks/useBackToClose';
-import getErrorMessage from '@/lib/getErrorMessage';
-import request from '@/lib/request';
 import translator from '@/lib/translator';
 
 const UserMenu = () => {
-  const { isAdmin, session, signOut } = useAuth();
+  const { isAdmin, session } = useAuth();
   const insets = useSafeAreaInsets();
-  const { showAlert } = useAlert();
-  const { hideLoader, showLoader } = useLoader();
+  const logout = useLogout();
   const [isOpen, setIsOpen] = useState(false);
 
   const username = session?.name ?? '';
@@ -26,17 +22,9 @@ const UserMenu = () => {
 
   useBackToClose(isOpen, close);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     close();
-    showLoader();
-    try {
-      await request.get('/logout');
-      await signOut();
-    } catch (error) {
-      showAlert('error', getErrorMessage(error));
-    } finally {
-      hideLoader();
-    }
+    logout();
   };
 
   return (

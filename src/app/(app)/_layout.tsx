@@ -18,9 +18,7 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="product/index" options={{ title: translator('product') }} />
       <Stack.Screen name="product/[id]" options={{ title: translator('detail') }} />
-      <Stack.Screen name="transaction/list" options={{ title: translator('transaction_list') }} />
       <Stack.Protected guard={isAdmin}>
         <Stack.Screen
           name="transaction/form"

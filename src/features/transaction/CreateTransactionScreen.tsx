@@ -1,5 +1,6 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { isAxiosError } from 'axios';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ComponentProps, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -38,7 +39,11 @@ const defaultValues: TransactionFormType = {
   transaction_type_id: '1',
 };
 
+// Opened from a product detail with `productId` (and `type`), the product and
+// transaction type are filled in and saving goes back to that product.
 const CreateTransactionScreen = () => {
+  const router = useRouter();
+  const { productId, type } = useLocalSearchParams<{ productId?: string; type?: string }>();
   const { hideAlert, showAlert } = useAlert();
   const { hideLoader, showLoader } = useLoader();
   const categoryOptions = useCategoryOptions();
@@ -52,7 +57,10 @@ const CreateTransactionScreen = () => {
   ];
 
   const { control, handleSubmit, reset, setValue } = useForm<TransactionFormType>({
-    defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      transaction_type_id: type === '2' ? '2' : defaultValues.transaction_type_id,
+    },
   });
 
   // Products are filtered by the selected category.
@@ -74,6 +82,37 @@ const CreateTransactionScreen = () => {
       .finally(hideLoader);
   }, [categoryFilter, hideLoader, showAlert, showLoader]);
 
+  // Selects the product and its category. A new category reloads its product
+  // list (see the effect above); until then the product is the only option, so
+  // the select can show it.
+  const selectProduct = (product: ProductDetailType) => {
+    const categoryId = product.category_id?.toString() ?? null;
+    if (categoryId !== categoryFilter || !categoryId) {
+      setCategoryFilter(categoryId);
+      setProductOptions([
+        {
+          label: `${product.name} - ${product.type} - ${product.size}`,
+          value: product.id.toString(),
+        },
+      ]);
+    }
+    setValue('product_id', product.id.toString());
+  };
+
+  useEffect(() => {
+    if (!productId) {
+      return;
+    }
+    showLoader();
+    request
+      .get<ProductDetailType>(`/products/${productId}`)
+      .then(selectProduct)
+      .catch((error) => showAlert('error', getErrorMessage(error)))
+      .finally(hideLoader);
+    // Runs once for the product the screen was opened with.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
+
   // Fills the category and product from a scanned barcode / QR code. Picking
   // them by hand with the selects keeps working the same way.
   const onScanned = async (code: string) => {
@@ -81,19 +120,7 @@ const CreateTransactionScreen = () => {
     showLoader();
     try {
       const product = await request.get<ProductDetailType>('/products/by-code', { code });
-      const categoryId = product.category_id?.toString() ?? null;
-      // A new category reloads its product list (see the effect above); until
-      // then the scanned product is the only option, so the select can show it.
-      if (categoryId !== categoryFilter || !categoryId) {
-        setCategoryFilter(categoryId);
-        setProductOptions([
-          {
-            label: `${product.name} - ${product.type} - ${product.size}`,
-            value: product.id.toString(),
-          },
-        ]);
-      }
-      setValue('product_id', product.id.toString());
+      selectProduct(product);
       showAlert('success', `${translator('product_found')}: ${product.name}`);
     } catch (error) {
       showAlert(
@@ -117,6 +144,10 @@ const CreateTransactionScreen = () => {
         transaction_type_id: data.transaction_type_id,
       });
       showAlert('success', translator('data_is_created'));
+      if (productId) {
+        router.back();
+        return;
+      }
       reset();
     } catch (error) {
       showAlert('error', getErrorMessage(error));

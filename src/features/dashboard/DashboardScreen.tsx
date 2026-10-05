@@ -72,7 +72,7 @@ const DashboardScreen = () => {
             <StatCard
               color={colors.primary}
               icon="inventory-2"
-              onPress={() => router.push('/product')}
+              onPress={() => router.navigate('/product')}
               title={translator('product')}
               value={dataCount.productCount}
             />
@@ -90,7 +90,7 @@ const DashboardScreen = () => {
             <Pressable
               accessibilityLabel={`${translator('view_all')} ${translator('transaction')}`}
               accessibilityRole="button"
-              onPress={() => router.push('/transaction/list')}
+              onPress={() => router.navigate('/transaction')}
               style={({ hovered, pressed }) => [
                 styles.sectionAction,
                 (hovered || pressed) && styles.sectionActionPressed,

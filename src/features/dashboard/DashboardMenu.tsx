@@ -34,19 +34,18 @@ const menuItems: MenuItemType[] = [
     label: translator('scan_code'),
   },
   {
-    adminOnly: true,
-    color: colors.success,
-    href: '/transaction',
-    icon: 'point-of-sale',
-    label: translator('create_transaction'),
+    color: colors.primary,
+    href: '/product',
+    icon: 'inventory-2',
+    label: translator('check_stock'),
   },
   {
+    adminOnly: true,
     color: colors.success,
-    href: '/transaction/list',
-    icon: 'receipt-long',
-    label: translator('transaction_list'),
+    href: '/transaction/form',
+    icon: 'point-of-sale',
+    label: translator('new_transaction'),
   },
-  { color: colors.primary, href: '/product', icon: 'inventory-2', label: translator('product') },
   {
     adminOnly: true,
     color: colors.warning,
@@ -54,39 +53,19 @@ const menuItems: MenuItemType[] = [
     icon: 'add-box',
     label: translator('add_product'),
   },
-  {
-    adminOnly: true,
-    color: colors.info,
-    href: '/category',
-    icon: 'category',
-    label: translator('category'),
-  },
-  { adminOnly: true, color: colors.error, href: '/user', icon: 'group', label: translator('user') },
-  {
-    adminOnly: true,
-    color: colors.primaryDark,
-    href: '/audit',
-    icon: 'history',
-    label: translator('audit_trail'),
-  },
-  {
-    adminOnly: true,
-    color: colors.error,
-    href: '/error-log',
-    icon: 'bug-report',
-    label: translator('error_log'),
-  },
 ];
 
-// Shortcuts to every page; only Dashboard, Scan and Transaction are tabs.
+// Quick actions only. Pages are reached through the tabs; master data and
+// admin pages sit in the More tab.
 const DashboardMenu = () => {
   const router = useRouter();
   const { isAdmin } = useAuth();
   const items = menuItems.filter((item) => isAdmin || !item.adminOnly);
+  const tileWidth = `${100 / items.length}%` as const;
 
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>{translator('menu')}</Text>
+      <Text style={styles.title}>{translator('quick_actions')}</Text>
       <View style={styles.grid}>
         {items.map((item) => (
           <Pressable
@@ -95,6 +74,7 @@ const DashboardMenu = () => {
             onPress={() => router.navigate(item.href)}
             style={({ hovered, pressed }) => [
               styles.tile,
+              { width: tileWidth },
               (hovered || pressed) && styles.tilePressed,
             ]}
           >
@@ -148,7 +128,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     gap: spacing.sm,
     paddingVertical: spacing.sm,
-    width: '33.33%',
   },
   tilePressed: {
     backgroundColor: colors.surfaceMuted,

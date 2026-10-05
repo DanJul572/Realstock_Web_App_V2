@@ -1,7 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ComponentProps, useCallback, useEffect, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { ComponentProps, useCallback, useState } from 'react';
 import { ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import ZBadge from '@/components/ZBadge';
@@ -47,9 +47,8 @@ const ProductDetailScreen = () => {
       .finally(hideLoader);
   }, [hideLoader, id, showAlert, showLoader]);
 
-  useEffect(() => {
-    getProduct();
-  }, [getProduct]);
+  // Reloads on return too, so the stock is current after a transaction.
+  useFocusEffect(getProduct);
 
   if (!product) {
     return null;
@@ -62,6 +61,9 @@ const ProductDetailScreen = () => {
         title: product.name,
       }
     : null;
+
+  const addTransaction = (type: '1' | '2') =>
+    router.push({ pathname: '/transaction/form', params: { productId: id, type } });
 
   const onPrint = async () => {
     if (!label) {
@@ -102,6 +104,24 @@ const ProductDetailScreen = () => {
         <View style={styles.stockBox}>
           <Text style={styles.stockLabel}>{translator('stock')}</Text>
           <Text style={styles.stockValue}>{formatNumber(product.stock)}</Text>
+          {isAdmin && (
+            <View style={styles.stockActions}>
+              <ZButton
+                color={colors.success}
+                icon="south-west"
+                onPress={() => addTransaction('1')}
+                style={styles.stockAction}
+                title={translator('stock_in')}
+              />
+              <ZButton
+                color={colors.error}
+                icon="north-east"
+                onPress={() => addTransaction('2')}
+                style={styles.stockAction}
+                title={translator('stock_out')}
+              />
+            </View>
+          )}
         </View>
 
         <View style={styles.infoGrid}>
@@ -290,6 +310,16 @@ const styles = StyleSheet.create({
     fontSize: 44,
     fontWeight: '800',
     letterSpacing: -1,
+  },
+  stockActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  stockAction: {
+    flexBasis: 140,
+    flexGrow: 1,
   },
   infoGrid: {
     flexDirection: 'row',

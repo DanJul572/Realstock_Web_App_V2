@@ -1,1 +1,1 @@
-export { default } from '@/features/transaction/CreateTransactionScreen';
+export { default } from '@/features/transaction/TransactionListScreen';

@@ -5,7 +5,6 @@ import { ColorValue, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, gradient, gradients, radius, scanTabButtonRise, shadows } from '@/constants/theme';
-import { useAuth } from '@/context/AuthContext';
 import UserMenu from '@/features/auth/UserMenu';
 import translator from '@/lib/translator';
 
@@ -48,8 +47,8 @@ const ScanTabButton = ({ accessibilityState, onPress }: BottomTabBarButtonProps)
   );
 };
 
+// Every role gets the same five tabs; admin-only actions live inside the pages.
 export default function TabLayout() {
-  const { isAdmin } = useAuth();
   const insets = useSafeAreaInsets();
 
   return (
@@ -76,6 +75,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="product"
+        options={{ tabBarIcon: tabIcon('inventory-2'), title: translator('product') }}
+      />
+      <Tabs.Screen
         name="scan"
         options={{
           headerShown: false,
@@ -83,12 +86,18 @@ export default function TabLayout() {
           title: translator('scan_code'),
         }}
       />
-      <Tabs.Protected guard={isAdmin}>
-        <Tabs.Screen
-          name="transaction"
-          options={{ tabBarIcon: tabIcon('point-of-sale'), title: translator('transaction') }}
-        />
-      </Tabs.Protected>
+      <Tabs.Screen
+        name="transaction"
+        options={{ tabBarIcon: tabIcon('receipt-long'), title: translator('transaction') }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          headerRight: undefined,
+          tabBarIcon: tabIcon('menu'),
+          title: translator('others'),
+        }}
+      />
     </Tabs>
   );
 }
