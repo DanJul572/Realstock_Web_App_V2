@@ -41,7 +41,8 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to use the camera to take product photos.",
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to choose product images."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

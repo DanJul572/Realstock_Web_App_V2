@@ -1,4 +1,5 @@
 import { Modal, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ZCodeScanner from '@/components/ZCodeScanner';
 import ZIconButton from '@/components/ZIconButton';
@@ -15,6 +16,7 @@ type PropsType = {
 
 // Full-screen scanner used to fill a code field (e.g. the product form).
 const ZScannerModal = ({ onClose, onScanned, visible }: PropsType) => {
+  const insets = useSafeAreaInsets();
   useBackToClose(visible, onClose);
 
   const handleCode = (code: string) => {
@@ -25,7 +27,7 @@ const ZScannerModal = ({ onClose, onScanned, visible }: PropsType) => {
   return (
     <Modal animationType="slide" onRequestClose={onClose} visible={visible}>
       <View style={styles.screen}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: spacing.sm + insets.top }]}>
           <Text style={styles.title}>{translator('scan_code')}</Text>
           <ZIconButton
             accessibilityLabel={translator('cancel')}
@@ -37,7 +39,7 @@ const ZScannerModal = ({ onClose, onScanned, visible }: PropsType) => {
         <View style={styles.camera}>
           {visible && <ZCodeScanner active={visible} onScanned={handleCode} />}
         </View>
-        <View style={styles.manual}>
+        <View style={[styles.manual, { paddingBottom: spacing.lg + insets.bottom }]}>
           <ZManualCodeInput onSubmit={handleCode} />
         </View>
       </View>

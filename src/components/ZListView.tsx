@@ -17,7 +17,7 @@ import ZSelect from '@/components/ZSelect';
 import ZTextField from '@/components/ZTextField';
 import { colors, contentMaxWidth, radius, shadows, spacing, typography } from '@/constants/theme';
 import { PaginatedListType } from '@/hooks/usePaginatedList';
-import useTabBarOverlap from '@/hooks/useTabBarOverlap';
+import useBottomInset from '@/hooks/useBottomInset';
 import translator from '@/lib/translator';
 import { ColumnType } from '@/types';
 
@@ -50,7 +50,7 @@ type PropsType<T> = {
 
 const ZListView = <T,>(props: PropsType<T>) => {
   const { enableLoadMore = true, enableToolbar = true, list } = props;
-  const tabBarOverlap = useTabBarOverlap();
+  const bottomInset = useBottomInset();
   const showFab = Boolean(props.enableAddButton && props.onAdd);
   const isFirstLoad = list.isLoading && !list.isRefreshing && list.rows.length === 0;
 
@@ -59,7 +59,7 @@ const ZListView = <T,>(props: PropsType<T>) => {
       <FlatList
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: (showFab ? fabClearance : spacing.lg) + tabBarOverlap },
+          { paddingBottom: (showFab ? fabClearance : spacing.lg) + bottomInset },
         ]}
         data={list.rows}
         keyExtractor={(item) => String(item[props.idField])}
@@ -88,6 +88,7 @@ const ZListView = <T,>(props: PropsType<T>) => {
           onPress={props.onAdd}
           style={({ hovered, pressed }) => [
             styles.fab,
+            { bottom: spacing.xl + bottomInset },
             hovered && styles.fabHovered,
             pressed && styles.fabPressed,
           ]}
@@ -468,7 +469,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: radius.round,
-    bottom: spacing.xl,
     flexDirection: 'row',
     gap: spacing.sm,
     paddingHorizontal: spacing.xl - 4,

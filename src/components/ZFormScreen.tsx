@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import ZButton from '@/components/ZButton';
 import { colors, contentMaxWidth, radius, shadows, spacing, typography } from '@/constants/theme';
-import useTabBarOverlap from '@/hooks/useTabBarOverlap';
+import useBottomInset from '@/hooks/useBottomInset';
 import translator from '@/lib/translator';
 
 type PropsType = {
@@ -16,14 +16,14 @@ type PropsType = {
 
 // Scrollable form with the actions pinned to the bottom of the screen.
 const ZFormScreen = ({ children, onBack, onClear, onSubmit }: PropsType) => {
-  const tabBarOverlap = useTabBarOverlap();
+  const bottomInset = useBottomInset();
 
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {children}
       </ScrollView>
-      <View style={[styles.footer, { paddingBottom: spacing.md + tabBarOverlap }]}>
+      <View style={[styles.footer, { paddingBottom: spacing.md + bottomInset }]}>
         <View style={styles.actions}>
           {onBack && (
             <ZButton

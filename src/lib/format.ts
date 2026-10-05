@@ -19,3 +19,19 @@ export const formatCurrency = (value: number | string | null | undefined): strin
   const number = Number(value);
   return Number.isFinite(number) ? `Rp. ${currencyFormat.format(number)}` : String(value ?? '-');
 };
+
+const dateTimeFormat = new Intl.DateTimeFormat(getLocales()[0]?.languageTag ?? 'id-ID', {
+  dateStyle: 'medium',
+  timeStyle: 'medium',
+});
+
+// Laravel timestamps are UTC ISO strings ("2026-10-04T05:00:00.000000Z");
+// they are shown in the device time zone. Microseconds are cut to
+// milliseconds because not every JS engine parses more digits.
+export const formatDateTime = (value: string | null | undefined): string => {
+  if (!value) {
+    return '-';
+  }
+  const date = new Date(value.replace(/(\.\d{3})\d+/, '$1'));
+  return Number.isNaN(date.getTime()) ? value : dateTimeFormat.format(date);
+};

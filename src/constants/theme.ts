@@ -80,6 +80,13 @@ export const noOutline: TextStyle = Platform.select<TextStyle>({
   default: {},
 });
 
+// Lets long unbroken text (URLs, class names, stack traces) wrap anywhere
+// instead of overflowing its box on web; native already breaks long words.
+export const breakAll: TextStyle = Platform.select<TextStyle>({
+  web: { wordBreak: 'break-all' } as unknown as TextStyle,
+  default: {},
+});
+
 // `color` must be a #rrggbb hex value.
 export const withAlpha = (color: string, alpha: number): string => {
   const value = parseInt(color.slice(1), 16);

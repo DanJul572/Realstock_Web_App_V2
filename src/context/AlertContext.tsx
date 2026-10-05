@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, radius, shadows, spacing, withAlpha } from '@/constants/theme';
 import { AlertType } from '@/types';
@@ -29,6 +30,7 @@ const autoHideMs = 5000;
 const AlertContext = createContext<AlertContextType | null>(null);
 
 export const AlertProvider = ({ children }: { children: ReactNode }) => {
+  const insets = useSafeAreaInsets();
   const [alert, setAlert] = useState<AlertStateType | null>(null);
 
   const showAlert = useCallback((type: AlertType, message: string) => {
@@ -54,7 +56,10 @@ export const AlertProvider = ({ children }: { children: ReactNode }) => {
       <View style={styles.root}>
         {children}
         {alert && (
-          <View style={styles.container} pointerEvents="box-none">
+          <View
+            pointerEvents="box-none"
+            style={[styles.container, { top: spacing.md + insets.top }]}
+          >
             <View accessibilityRole="alert" style={styles.toast}>
               <View style={[styles.accent, { backgroundColor: color }]} />
               <View style={[styles.iconCircle, { backgroundColor: withAlpha(color, 0.12) }]}>
@@ -94,7 +99,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     position: 'absolute',
     right: 0,
-    top: spacing.md,
     zIndex: 90,
   },
   toast: {

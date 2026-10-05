@@ -2,11 +2,15 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BottomTabBarButtonProps, Tabs } from 'expo-router/js-tabs';
 import { ComponentProps } from 'react';
 import { ColorValue, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, gradient, gradients, radius, scanTabButtonRise, shadows } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import UserMenu from '@/features/auth/UserMenu';
 import translator from '@/lib/translator';
+
+// Height of the tab bar content; the system navigation bar inset is added on top.
+const tabBarHeight = 68;
 
 type IconNameType = ComponentProps<typeof MaterialIcons>['name'];
 
@@ -46,6 +50,7 @@ const ScanTabButton = ({ accessibilityState, onPress }: BottomTabBarButtonProps)
 
 export default function TabLayout() {
   const { isAdmin } = useAuth();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -59,7 +64,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSubtle,
         tabBarLabelStyle: styles.tabLabel,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [styles.tabBar, { height: tabBarHeight + insets.bottom }],
       }}
     >
       <Tabs.Screen
@@ -103,7 +108,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopColor: colors.border,
     boxShadow: '0 -4px 20px rgba(27, 21, 48, 0.06)',
-    height: 68,
     overflow: 'visible',
     paddingTop: 6,
   },
